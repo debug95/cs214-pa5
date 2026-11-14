@@ -23,6 +23,10 @@ public final class ProcessorChooser {
                 PA4Processor.run(args[0], args[1]);
                 break;
 
+            case "-r":
+                PA5Processor.run(args[0], args[1]);
+                break;
+
             default:
                 throw new IllegalArgumentException("Error: invalid third argument");
         }

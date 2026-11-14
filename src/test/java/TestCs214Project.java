@@ -21,13 +21,13 @@ public class TestCs214Project {
     @Test
     public void invalidThirdArgument() {
         try {
-            ProcessorChooser.processorHandler(new String[]{"in.csv", "out.csv", "-z"});
+            ProcessorChooser.processorHandler(new String[] { "in.csv", "out.csv", "-z" });
         } catch (IllegalArgumentException e) {
             assertEquals("Error: invalid third argument", e.getMessage());
         }
     }
 
-    @Test 
+    @Test
     public void similarityCalculatorWorks() {
         User user1 = new User("user1");
         user1.addRating("A", 1);
@@ -45,7 +45,7 @@ public class TestCs214Project {
         assertFalse(Double.isNaN(similarity));
     }
 
-    @Test 
+    @Test
     public void predictionEnginePredictsRating() {
         User target = new User("target");
         target.addRating("A", 1);
@@ -111,18 +111,18 @@ public class TestCs214Project {
 
     @Test
     public void tooFewArguments() {
-        try{
-            ProcessorChooser.processorHandler(new String[]{"in.csv"});
-        } catch(IllegalArgumentException e){
+        try {
+            ProcessorChooser.processorHandler(new String[] { "in.csv" });
+        } catch (IllegalArgumentException e) {
             assertEquals("Error: incorrect number of arguments", e.getMessage());
         }
     }
 
-    @Test 
+    @Test
     public void tooManyArguments() {
-        try{
-            ProcessorChooser.processorHandler(new String[]{"in.csv", "out.csv", "-a", "-u"});
-        } catch(IllegalArgumentException e){
+        try {
+            ProcessorChooser.processorHandler(new String[] { "in.csv", "out.csv", "-a", "-u" });
+        } catch (IllegalArgumentException e) {
             assertEquals("Error: incorrect number of arguments", e.getMessage());
         }
     }
@@ -206,14 +206,14 @@ public class TestCs214Project {
 
         User user1 = new User("user1");
         user1.addRating("A", 5.0);
-        user1.addRating( "B", 3.0);
+        user1.addRating("B", 3.0);
 
         User user2 = new User("user2");
         user2.addRating("A", 4.0);
 
         users.put("user1", user1);
         users.put("user2", user2);
-        
+
         PA3Processor.removeUncooperativeUsers(users);
 
         assertTrue(users.containsKey("user1"));
