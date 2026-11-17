@@ -8,7 +8,9 @@ public final class ProcessorChooser {
             return;
         }
 
-        validateThreeArgs(args);
+        if (args.length < 3) {
+            throw new IllegalArgumentException("Error: incorrect number of arguments");
+        }
 
         switch (args[2]) {
             case "-a":
@@ -24,18 +26,17 @@ public final class ProcessorChooser {
                 break;
 
             case "-r":
-                PA5Processor.run(args[0], args[1]);
+                if (args.length < 4) {
+                    throw new IllegalArgumentException("Error: must select at least one song for recommendations");
+                }
+
+                String[] selections = java.util.Arrays.copyOfRange(args, 3, args.length);
+
+                PA5Processor.run(args[0], args[1], selections);
                 break;
 
             default:
                 throw new IllegalArgumentException("Error: invalid third argument");
-        }
-    }
-
-    private static void validateThreeArgs(String[] args) {
-
-        if (args.length != 3) {
-            throw new IllegalArgumentException("Error: incorrect number of arguments");
         }
     }
 }

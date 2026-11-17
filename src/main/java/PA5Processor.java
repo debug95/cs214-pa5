@@ -2,7 +2,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class PA5Processor {
-        public static void run(String inputFile, String outputFile) {
+        public static void run(String inputFile, String outputFile, String[] selections) {
         try {
             Validator.validateInputFile(inputFile);
             Validator.validateOutputPath(outputFile);
