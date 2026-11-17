@@ -6,7 +6,7 @@ public class PA5Processor {
         try {
             Validator.validateInputFile(inputFile);
             Validator.validateOutputPath(outputFile);
-            process(inputFile, outputFile);
+            process(inputFile, outputFile, selections);
         } catch (FileNotFoundException e) {
             ErrorPrinter.printFileNotFound(inputFile);
         } catch (IllegalArgumentException e) {
@@ -16,7 +16,7 @@ public class PA5Processor {
         }
     }
 
-    private static void process(String inputFile, String outputFile) throws IOException  {
+    private static void process(String inputFile, String outputFile, String[] selections) throws IOException  {
         System.out.println("PA5 process method active");
     }
 }

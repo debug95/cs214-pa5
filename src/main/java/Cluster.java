@@ -39,7 +39,11 @@ public class Cluster {
             }
         }
 
+        for (int i = 0; i < users.size(); i++){
+            newCentroid[i] /= songs.size();
+        }
+
         centroid = newCentroid;
-        
+
     }
 }
