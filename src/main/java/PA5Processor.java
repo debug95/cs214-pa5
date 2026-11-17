@@ -38,6 +38,10 @@ public class PA5Processor {
         validateSelections(selections, allSongs);
 
         validateNoDuplicates(selections);
+
+        PA3Processor.normalizeAllUsers(users);
+
+        PA3Processor.fillMissingRatings(users, allSongs);
     }
 
     private static void validateSelections(String[] selections, Set<String> allSongs) {
