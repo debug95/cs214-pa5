@@ -16,7 +16,7 @@ public class Song implements SimilarityComparable {
         return name;
     }
 
-    public void addRating(String user, double rating) {
+    public void setRating(String user, double rating) {
         ratings.put(user, rating);
     }
 
