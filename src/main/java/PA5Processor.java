@@ -1,6 +1,7 @@
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,12 +37,13 @@ public class PA5Processor {
         Set<String> allSongs = PA3Processor.collectAllSongs(users);
 
         validateSelections(selections, allSongs);
-
         validateNoDuplicates(selections);
 
         PA3Processor.normalizeAllUsers(users);
 
         PA3Processor.fillMissingRatings(users, allSongs);
+
+        fillPredictedRatings(users, allSongs);
     }
 
     private static void validateSelections(String[] selections, Set<String> allSongs) {
@@ -60,6 +62,26 @@ public class PA5Processor {
         for (String song : selections) {
             if (!unique.add(song)) {
                 throw new IllegalArgumentException("duplicate song selections");
+            }
+        }
+    }
+
+    private static void fillPredictedRatings(Map<String, User> users, Set<String> allSongs) {
+
+        for (User user : users.values()) {
+            for (String song : allSongs) {
+
+                if (!Double.isNaN(user.getRating(song))) {
+                    continue;
+                }
+
+                List<User> ranked = PA4Processor.rankUsers(user, users);
+
+                Double prediction = PredictionEngine.predictRating(user, song, ranked);
+
+                if (!Double.isNaN(prediction)) { 
+                    user.setRating(song, prediction);
+                }
             }
         }
     }
