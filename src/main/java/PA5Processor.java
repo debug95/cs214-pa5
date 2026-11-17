@@ -41,10 +41,10 @@ public class PA5Processor {
     }
 
     private static void validateSelections(String[] selections, Set<String> allSongs) {
-        
+
         for (String song : selections) {
             if (!allSongs.contains(song)) {
-                throw new IllegalArgumentException("Error: selected songs must exist");
+                throw new IllegalArgumentException("selected songs must exist");
             }
         }
     }
@@ -55,7 +55,7 @@ public class PA5Processor {
 
         for (String song : selections) {
             if (!unique.add(song)) {
-                throw new IllegalArgumentException("Error: dublicate song selections");
+                throw new IllegalArgumentException("duplicate song selections");
             }
         }
     }
