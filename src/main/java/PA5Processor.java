@@ -1,5 +1,6 @@
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,9 @@ public class PA5Processor {
         validateSelections(selections, allSongs);
         validateNoDuplicates(selections);
 
+        RatingStats userStats = buildUserStats(users);
+        RatingStats songStats = buildSongStats(inputFile);
+
         PA3Processor.normalizeAllUsers(users);
 
         PA3Processor.fillMissingRatings(users, allSongs);
@@ -56,7 +60,7 @@ public class PA5Processor {
     }
 
     private static void validateNoDuplicates(String[] selections) {
-        
+
         Set<String> unique = new HashSet<>();
 
         for (String song : selections) {
@@ -79,10 +83,46 @@ public class PA5Processor {
 
                 Double prediction = PredictionEngine.predictRating(user, song, ranked);
 
-                if (!Double.isNaN(prediction)) { 
+                if (!Double.isNaN(prediction)) {
                     user.setRating(song, prediction);
                 }
             }
         }
+    }
+
+    private static RatingStats buildUserStats(Map<String, User> users) {
+
+        Map<String, Double> means = new HashMap<>();
+        Map<String, Integer> counts = new HashMap<>();
+
+        for (User user : users.values()) {
+            means.put(user.getUsername(), user.getMean());
+            counts.put(user.getUsername(), user.getRatings().size());
+        }
+
+        return new RatingStats(means, counts);
+    }
+
+    private static RatingStats buildSongStats(String inputFile) throws IOException {
+
+        SongDatabase database = new SongDatabase();
+
+        CSVUtils.forEachRecord(inputFile, record -> {
+
+            String song = record.get(0).trim();
+            int rating = Integer.parseInt(record.get(2).trim());
+
+            database.add(song, rating);
+        });
+
+        Map<String, Double> means = new HashMap<>();
+        Map<String, Integer> counts = new HashMap<>();
+
+        for (var entry : database.getSongs().entrySet()) {
+            means.put(entry.getKey(), entry.getValue().getMean());
+            counts.put(entry.getKey(), entry.getValue().getCount());
+        }
+
+        return new RatingStats(means, counts);
     }
 }
