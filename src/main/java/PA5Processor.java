@@ -55,10 +55,10 @@ public class PA5Processor {
         PA3Processor.normalizeAllUsers(normalizedUsers);
 
         PA3Processor.fillMissingRatings(normalizedUsers, allSongs);
-        PA3Processor.fillMissingRatings(users,allSongs);
+        PA3Processor.fillMissingRatings(users, allSongs);
 
         fillPredictedRatings(users, normalizedUsers, allSongs);
-        
+
         fillRemainingRatings(users, allSongs, songStats, userStats);
 
         Map<String, Song> songs = prepareSongs(users, allSongs, selections);
@@ -119,7 +119,8 @@ public class PA5Processor {
         }
     }
 
-    private static void fillPredictedRatings(Map<String, User> rawUsers, Map<String, User> normalizedUsers, Set<String> allSongs) {
+    private static void fillPredictedRatings(Map<String, User> rawUsers, Map<String, User> normalizedUsers,
+            Set<String> allSongs) {
 
         for (User rawUser : rawUsers.values()) {
             User normalizedTarget = normalizedUsers.get(rawUser.getUsername());
@@ -252,42 +253,65 @@ public class PA5Processor {
     private static void normalizeSongs(Map<String, Song> songs) {
 
         for (Song song : songs.values()) {
-            double sum = 0.0;
-            int count = 0;
-
-            for (double rating : song.getRatings().values()) {
-                sum += rating;
-                count++;
-            }
-
-            double mean = sum / count;
-
-            double variance = 0.0;
-
-            for (double rating : song.getRatings().values()) {
-                double diff = rating - mean;
-                variance += diff * diff;
-            }
-
-            double stdDev = Math.sqrt(variance / count);
-
-            if (stdDev == 0.0) {
-                for (String user : song.getRatings().keySet()) {
-                    song.setRating(user, 0.0);
-                }
-                continue;
-            }
-
-            for (String user : song.getRatings().keySet()) {
-                double rating = song.getRatings().get(user);
-                double normalized = (rating - mean) / stdDev;
-
-                song.setRating(user, normalized);
-            }
+            normalizeASong(song);
         }
     }
 
-    private static List<Cluster> initializeClusters(Map<String, Song> songs, String[] selections, List<String> usersInOrder) {
+    private static void normalizeASong(Song song) {
+
+        double mean = calculateSongMean(song);
+
+        double stdDev = calculateSongStdDev(song, mean);
+
+        if (stdDev == 0.0) {
+            setAllRatingsToZero(song);
+            return;
+        }
+
+        applyNormalization(song, mean, stdDev);
+    }
+
+    public static double calculateSongMean(Song song) {
+        double sum = 0.0;
+        int count = 0;
+
+        for (double rating : song.getRatings().values()) {
+            sum += rating;
+            count++;
+        }
+
+        double mean = sum / count;
+        return mean;
+    }
+
+    private static double calculateSongStdDev(Song song, double mean) {
+        double variance = 0.0;
+
+        for (double rating : song.getRatings().values()) {
+            double diff = rating - mean;
+            variance += diff * diff;
+        }
+
+        return Math.sqrt(variance / song.getRatings().size());
+    }
+
+    private static void setAllRatingsToZero(Song song) {
+        for (String user : song.getRatings().keySet()) {
+            song.setRating(user, 0.0);
+        }
+    }
+
+    private static void applyNormalization(Song song, double mean, double stdDev) {
+        for (String user : song.getRatings().keySet()) {
+            double rating = song.getRatings().get(user);
+            double normalized = (rating - mean) / stdDev;
+
+            song.setRating(user, normalized);
+        }
+    }
+
+    private static List<Cluster> initializeClusters(Map<String, Song> songs, String[] selections,
+            List<String> usersInOrder) {
 
         List<Cluster> clusters = new ArrayList<>();
 
