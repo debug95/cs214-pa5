@@ -62,7 +62,15 @@ public class PA5Processor {
 
         List<Cluster> clusters = initializeClusters(songs, selections);
 
-        
+        List<String> usersInOrder = new ArrayList<>(users.keySet());
+
+        for (int iteration = 0; iteration < 10; iteration++){
+            assignSongsToClusters(songs, clusters);
+
+            for (Cluster cluster : clusters){
+                cluster.recomputeCentroid(usersInOrder);
+            }
+        }
     }
 
     private static void validateSelections(String[] selections, Set<String> allSongs) {
@@ -264,5 +272,41 @@ public class PA5Processor {
         }
 
         return centroid;
+    }
+
+    private static void assignSongsToClusters(Map<String, Song> songs, List<Cluster> clusters) {
+
+        for (Cluster cluster : clusters) {
+            cluster.clearSongs();
+        }
+
+        for (Song song : songs.values()) {
+            int closestIndex = 0;
+            double closestDistance = calculateDistance(song, clusters.get(0).getCentroid());
+
+            for (int i=1; i < clusters.size(); i++) {
+                double distance = calculateDistance(song, clusters.get(i).getCentroid());
+
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestIndex = i;
+                }
+            }
+
+            clusters.get(closestIndex).addSong(song);
+        }
+    }
+
+    private static double calculateDistance(Song song, double[] centroid) {
+        double sum = 0.0;
+        int index = 0;
+
+        for (double rating : song.getRatings().values()) {
+            double diff = rating - centroid[index];
+            sum += diff*diff;
+            index++;
+        }
+
+        return Math.sqrt(sum);
     }
 }
