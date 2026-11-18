@@ -44,12 +44,14 @@ public class PA5Processor {
         RatingStats songStats = buildSongStats(inputFile);
 
         PA3Processor.normalizeAllUsers(users);
-
         PA3Processor.fillMissingRatings(users, allSongs);
 
         fillPredictedRatings(users, allSongs);
-
         fillRemainingRatings(users, allSongs, songStats, userStats);
+    
+        Map<String, Song> songs = buildSongs(users, allSongs);
+
+
     }
 
     private static void validateSelections(String[] selections, Set<String> allSongs) {
@@ -148,5 +150,22 @@ public class PA5Processor {
                 user.setRating(song, rounded);
             }
         }
+    }
+
+    private static Map<String, Song> buildSongs(Map<String, User> users, Set<String> allSongs) {
+        
+        Map<String, Song> songs = new HashMap<>();
+
+        for (String songName : allSongs) {
+            Song song = new Song(songName);
+
+            for (User user : users.values()){
+                song.setRating(user.getUsername(), user.getRating(songName));
+            }
+
+            songs.put(songName, song);
+        }
+
+        return songs;
     }
 }
