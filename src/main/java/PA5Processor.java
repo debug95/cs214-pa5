@@ -51,7 +51,11 @@ public class PA5Processor {
     
         Map<String, Song> songs = buildSongs(users, allSongs);
 
+        removeFlatSongs(songs);
 
+        if (songs.size() < selections.length + 1) {
+            throw new IllegalArgumentException("no songs to recommend. Songs may have been removed. Try with a larger file or fewer selections.");
+        }
     }
 
     private static void validateSelections(String[] selections, Set<String> allSongs) {
@@ -131,19 +135,19 @@ public class PA5Processor {
     }
 
     private static void fillRemainingRatings(Map<String, User> users, Set<String> allSongs,
-                                            RatingStats songStats, RatingStats userStats) {
+            RatingStats songStats, RatingStats userStats) {
         for (User user : users.values()) {
             for (String song : allSongs) {
-                if(!Double.isNaN(user.getRating(song))) {
+                if (!Double.isNaN(user.getRating(song))) {
                     continue;
                 }
 
                 double songMean = songStats.getMeans().get(song);
                 int songCount = songStats.getCounts().get(song);
-                double userMean = userStats. getMeans().get(user.getUsername());
+                double userMean = userStats.getMeans().get(user.getUsername());
                 int userCount = userStats.getCounts().get(user.getUsername());
-                
-                double prediction = (songMean * songCount + userMean * userCount)/(songCount + userCount);
+
+                double prediction = (songMean * songCount + userMean * userCount) / (songCount + userCount);
 
                 int rounded = PredictionEngine.clampRating(prediction);
 
@@ -153,13 +157,13 @@ public class PA5Processor {
     }
 
     private static Map<String, Song> buildSongs(Map<String, User> users, Set<String> allSongs) {
-        
+
         Map<String, Song> songs = new HashMap<>();
 
         for (String songName : allSongs) {
             Song song = new Song(songName);
 
-            for (User user : users.values()){
+            for (User user : users.values()) {
                 song.setRating(user.getUsername(), user.getRating(songName));
             }
 
@@ -167,5 +171,22 @@ public class PA5Processor {
         }
 
         return songs;
+    }
+
+    private static void removeFlatSongs(Map<String, Song> songs) {
+
+        Set<String> toRemove = new HashSet<>();
+
+        for (Song song : songs.values()) {
+            Set<Double> distinct = new HashSet<>(song.getRatings().values());
+
+            if (distinct.size() <= 1) {
+                toRemove.add(song.getName());
+            }
+        }
+
+        for (String songName : toRemove) {
+            songs.remove(songName);
+        }
     }
 }
