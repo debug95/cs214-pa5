@@ -12,6 +12,10 @@ public final class ProcessorChooser {
             throw new IllegalArgumentException("Error: incorrect number of arguments");
         }
 
+        handleMode(args);
+    }
+
+    private static void handleMode(String[] args) {
         switch (args[2]) {
             case "-a":
                 PA2Processor.run(args[0], args[1]);
@@ -26,17 +30,21 @@ public final class ProcessorChooser {
                 break;
 
             case "-r":
-                if (args.length < 4) {
-                    throw new IllegalArgumentException("Error: must select at least one song for recommendations");
-                }
-
-                String[] selections = java.util.Arrays.copyOfRange(args, 3, args.length);
-
-                PA5Processor.run(args[0], args[1], selections);
+                handleRecommendations(args);
                 break;
 
             default:
                 throw new IllegalArgumentException("Error: invalid third argument");
         }
+    }
+
+    private static void handleRecommendations(String[] args) {
+        if (args.length < 4) {
+            throw new IllegalArgumentException("Error: must select at least one song for recommendations");
+        }
+
+        String[] selections = java.util.Arrays.copyOfRange(args, 3, args.length);
+
+        PA5Processor.run(args[0], args[1], selections);
     }
 }
