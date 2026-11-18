@@ -1,5 +1,6 @@
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -58,6 +59,10 @@ public class PA5Processor {
         }
 
         normalizeSongs(songs);
+
+        List<Cluster> clusters = initializeClusters(songs, selections);
+
+        
     }
 
     private static void validateSelections(String[] selections, Set<String> allSongs) {
@@ -228,5 +233,36 @@ public class PA5Processor {
                 song.setRating(user, normalized);
             }
         }
+    }
+
+    private static List<Cluster> initializeClusters(Map<String, Song> songs, String[] selections) {
+
+        List<Cluster> clusters = new ArrayList<>();
+
+        for (String selection : selections) {
+            Song song = songs.get(selection);
+
+            if (song == null) {
+                throw new IllegalArgumentException("selected songs must have more than one distince rating");
+            }
+
+            double[] centroid = buildCentroidVector(song);
+
+            clusters.add(new Cluster(centroid));
+        }
+
+        return clusters;
+    }
+
+    private static double[] buildCentroidVector(Song song) {
+        double[] centroid = new double[song.getRatings().size()];
+
+        int index = 0;
+
+        for (double rating : song.getRatings().values()) {
+            centroid[index++] = rating;
+        }
+
+        return centroid;
     }
 }
