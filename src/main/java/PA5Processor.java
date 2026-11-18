@@ -56,6 +56,8 @@ public class PA5Processor {
         if (songs.size() < selections.length + 1) {
             throw new IllegalArgumentException("no songs to recommend. Songs may have been removed. Try with a larger file or fewer selections.");
         }
+
+        normalizeSongs(songs);
     }
 
     private static void validateSelections(String[] selections, Set<String> allSongs) {
@@ -187,6 +189,44 @@ public class PA5Processor {
 
         for (String songName : toRemove) {
             songs.remove(songName);
+        }
+    }
+
+    private static void normalizeSongs(Map<String, Song> songs) {
+        
+        for (Song song : songs.values()) {
+            double sum = 0.0;
+            int count = 0;
+
+            for (double rating : song.getRatings().values()){
+                sum += rating;
+                count++;
+            }
+
+            double mean = sum / count;
+            
+            double variance = 0.0;
+
+            for (double rating : song.getRatings().values()) {
+                double diff = rating - mean;
+                variance += diff * diff;
+            }
+
+            double stdDev = Math.sqrt(variance/count);
+
+            if (stdDev == 0.0) {
+                for (String user : song.getRatings().keySet()) {
+                    song.setRating(user,0.0);
+                }
+                continue;
+            }
+
+            for (String user : song.getRatings().keySet()){
+                double rating = song.getRatings().get(user);
+                double normalized = (rating - mean)/stdDev;
+
+                song.setRating(user, normalized);
+            }
         }
     }
 }
