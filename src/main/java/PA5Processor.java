@@ -1,6 +1,8 @@
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -49,13 +51,14 @@ public class PA5Processor {
 
         fillPredictedRatings(users, allSongs);
         fillRemainingRatings(users, allSongs, songStats, userStats);
-    
+
         Map<String, Song> songs = buildSongs(users, allSongs);
 
         removeFlatSongs(songs);
 
         if (songs.size() < selections.length + 1) {
-            throw new IllegalArgumentException("no songs to recommend. Songs may have been removed. Try with a larger file or fewer selections.");
+            throw new IllegalArgumentException(
+                    "no songs to recommend. Songs may have been removed. Try with a larger file or fewer selections.");
         }
 
         normalizeSongs(songs);
@@ -64,12 +67,18 @@ public class PA5Processor {
 
         List<String> usersInOrder = new ArrayList<>(users.keySet());
 
-        for (int iteration = 0; iteration < 10; iteration++){
+        for (int iteration = 0; iteration < 10; iteration++) {
             assignSongsToClusters(songs, clusters);
 
-            for (Cluster cluster : clusters){
+            for (Cluster cluster : clusters) {
                 cluster.recomputeCentroid(usersInOrder);
             }
+        }
+
+        List<Recommendation> recommendations = buildRecommendations(clusters, selections);
+
+        if (recommendations.isEmpty()) {
+            throw new IllegalArgumentException("no songs to recommend. Songs may have been removed. Try with a larger file or fewer selections.")
         }
     }
 
@@ -206,18 +215,18 @@ public class PA5Processor {
     }
 
     private static void normalizeSongs(Map<String, Song> songs) {
-        
+
         for (Song song : songs.values()) {
             double sum = 0.0;
             int count = 0;
 
-            for (double rating : song.getRatings().values()){
+            for (double rating : song.getRatings().values()) {
                 sum += rating;
                 count++;
             }
 
             double mean = sum / count;
-            
+
             double variance = 0.0;
 
             for (double rating : song.getRatings().values()) {
@@ -225,18 +234,18 @@ public class PA5Processor {
                 variance += diff * diff;
             }
 
-            double stdDev = Math.sqrt(variance/count);
+            double stdDev = Math.sqrt(variance / count);
 
             if (stdDev == 0.0) {
                 for (String user : song.getRatings().keySet()) {
-                    song.setRating(user,0.0);
+                    song.setRating(user, 0.0);
                 }
                 continue;
             }
 
-            for (String user : song.getRatings().keySet()){
+            for (String user : song.getRatings().keySet()) {
                 double rating = song.getRatings().get(user);
-                double normalized = (rating - mean)/stdDev;
+                double normalized = (rating - mean) / stdDev;
 
                 song.setRating(user, normalized);
             }
@@ -284,7 +293,7 @@ public class PA5Processor {
             int closestIndex = 0;
             double closestDistance = calculateDistance(song, clusters.get(0).getCentroid());
 
-            for (int i=1; i < clusters.size(); i++) {
+            for (int i = 1; i < clusters.size(); i++) {
                 double distance = calculateDistance(song, clusters.get(i).getCentroid());
 
                 if (distance < closestDistance) {
@@ -303,10 +312,31 @@ public class PA5Processor {
 
         for (double rating : song.getRatings().values()) {
             double diff = rating - centroid[index];
-            sum += diff*diff;
+            sum += diff * diff;
             index++;
         }
 
         return Math.sqrt(sum);
+    }
+
+    private static List<Recommendation> buildRecommendations(List<Cluster> clusters, String[] selections) {
+        List<Recommendation> results = new ArrayList<>();
+        Set<String> selectedSongs = new HashSet<>(Arrays.asList(selections));
+
+        for (int i = 0; i < clusters.size(); i++) {
+            String choice = selections[i];
+
+            for (Song song : clusters.get(i).getSongs()){
+                if (selectedSongs.contains(song.getName())){
+                    continue;
+                }
+
+                results.add(new Recommendation(choice, song.getName()));
+            }
+        }
+
+        Collections.sort(results);
+
+        return results;
     }
 }
