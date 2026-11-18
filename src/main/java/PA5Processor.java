@@ -8,6 +8,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.io.Writer;
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 
 public class PA5Processor {
     public static void run(String inputFile, String outputFile, String[] selections) {
@@ -78,8 +82,11 @@ public class PA5Processor {
         List<Recommendation> recommendations = buildRecommendations(clusters, selections);
 
         if (recommendations.isEmpty()) {
-            throw new IllegalArgumentException("no songs to recommend. Songs may have been removed. Try with a larger file or fewer selections.")
+            throw new IllegalArgumentException(
+                    "no songs to recommend. Songs may have been removed. Try with a larger file or fewer selections.");
         }
+
+        writeRecommendations(outputFile, recommendations);
     }
 
     private static void validateSelections(String[] selections, Set<String> allSongs) {
@@ -326,8 +333,8 @@ public class PA5Processor {
         for (int i = 0; i < clusters.size(); i++) {
             String choice = selections[i];
 
-            for (Song song : clusters.get(i).getSongs()){
-                if (selectedSongs.contains(song.getName())){
+            for (Song song : clusters.get(i).getSongs()) {
+                if (selectedSongs.contains(song.getName())) {
                     continue;
                 }
 
@@ -338,5 +345,17 @@ public class PA5Processor {
         Collections.sort(results);
 
         return results;
+    }
+
+    private static void writeRecommendations(String outputFile, List<Recommendation> recommendations)
+            throws IOException {
+        CSVFormat format = CSVFormat.DEFAULT.builder().setHeader("user choice", "recommendation").build();
+
+        try (Writer writer = new java.io.FileWriter(outputFile);
+                CSVPrinter printer = new CSVPrinter(writer, format)) {
+            for (Recommendation recommendation : recommendations) {
+                printer.printRecord(recommendation.getUserChoice(), recommendation.getRecommendation());
+            }
+        }
     }
 }
