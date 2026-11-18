@@ -61,16 +61,7 @@ public class PA5Processor {
         
         fillRemainingRatings(users, allSongs, songStats, userStats);
 
-        Map<String, Song> songs = buildSongs(users, allSongs);
-
-        removeFlatSongs(songs);
-
-        if (songs.size() < selections.length + 1) {
-            throw new IllegalArgumentException(
-                    "no songs to recommend. Songs may have been removed. Try with a larger file or fewer selections.");
-        }
-
-        normalizeSongs(songs);
+        Map<String, Song> songs = prepareSongs(users, allSongs, selections);
 
         List<String> usersInOrder = new ArrayList<>(users.keySet());
 
@@ -92,6 +83,20 @@ public class PA5Processor {
         }
 
         writeRecommendations(outputFile, recommendations);
+    }
+
+    private static Map<String, Song> prepareSongs(Map<String, User> users, Set<String> allSongs, String[] selections) {
+        Map<String, Song> songs = buildSongs(users, allSongs);
+
+        removeFlatSongs(songs);
+
+        if (songs.size() < selections.length + 1) {
+            throw new IllegalArgumentException(
+                    "no songs to recommend. Songs may have been removed. Try with a larger file or fewer selections.");
+        }
+
+        normalizeSongs(songs);
+        return songs;
     }
 
     private static void validateSelections(String[] selections, Set<String> allSongs) {
