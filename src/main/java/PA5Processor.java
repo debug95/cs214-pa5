@@ -48,6 +48,8 @@ public class PA5Processor {
         PA3Processor.fillMissingRatings(users, allSongs);
 
         fillPredictedRatings(users, allSongs);
+
+        fillRemainingRatings(users, allSongs, songStats, userStats);
     }
 
     private static void validateSelections(String[] selections, Set<String> allSongs) {
@@ -124,5 +126,27 @@ public class PA5Processor {
         }
 
         return new RatingStats(means, counts);
+    }
+
+    private static void fillRemainingRatings(Map<String, User> users, Set<String> allSongs,
+                                            RatingStats songStats, RatingStats userStats) {
+        for (User user : users.values()) {
+            for (String song : allSongs) {
+                if(!Double.isNaN(user.getRating(song))) {
+                    continue;
+                }
+
+                double songMean = songStats.getMeans().get(song);
+                int songCount = songStats.getCounts().get(song);
+                double userMean = userStats. getMeans().get(user.getUsername());
+                int userCount = userStats.getCounts().get(user.getUsername());
+                
+                double prediction = (songMean * songCount + userMean * userCount)/(songCount + userCount);
+
+                int rounded = PredictionEngine.clampRating(prediction);
+
+                user.setRating(song, rounded);
+            }
+        }
     }
 }
