@@ -67,9 +67,9 @@ public class PA5Processor {
 
         normalizeSongs(songs);
 
-        List<Cluster> clusters = initializeClusters(songs, selections);
-
         List<String> usersInOrder = new ArrayList<>(users.keySet());
+
+        List<Cluster> clusters = initializeClusters(songs, selections, usersInOrder);
 
         for (int iteration = 0; iteration < 10; iteration++) {
             assignSongsToClusters(songs, clusters);
@@ -259,7 +259,7 @@ public class PA5Processor {
         }
     }
 
-    private static List<Cluster> initializeClusters(Map<String, Song> songs, String[] selections) {
+    private static List<Cluster> initializeClusters(Map<String, Song> songs, String[] selections, List<String> usersInOrder) {
 
         List<Cluster> clusters = new ArrayList<>();
 
@@ -267,10 +267,10 @@ public class PA5Processor {
             Song song = songs.get(selection);
 
             if (song == null) {
-                throw new IllegalArgumentException("selected songs must have more than one distince rating");
+                throw new IllegalArgumentException("selected songs must have more than one distinct rating");
             }
 
-            double[] centroid = buildCentroidVector(song);
+            double[] centroid = buildCentroidVector(song, usersInOrder);
 
             clusters.add(new Cluster(centroid));
         }
@@ -278,13 +278,11 @@ public class PA5Processor {
         return clusters;
     }
 
-    private static double[] buildCentroidVector(Song song) {
-        double[] centroid = new double[song.getRatings().size()];
+    private static double[] buildCentroidVector(Song song, List<String> usersInOrder) {
+        double[] centroid = new double[usersInOrder.size()];
 
-        int index = 0;
-
-        for (double rating : song.getRatings().values()) {
-            centroid[index++] = rating;
+        for (int i = 0; i < usersInOrder.size(); i++) {
+            centroid[i] = song.getNormalizedRating(usersInOrder.get(i));
         }
 
         return centroid;
