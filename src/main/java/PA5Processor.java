@@ -50,10 +50,15 @@ public class PA5Processor {
         RatingStats userStats = buildUserStats(users);
         RatingStats songStats = buildSongStats(inputFile);
 
-        PA3Processor.normalizeAllUsers(users);
-        PA3Processor.fillMissingRatings(users, allSongs);
+        Map<String, User> normalizedUsers = cloneUsers(users);
 
-        fillPredictedRatings(users, allSongs);
+        PA3Processor.normalizeAllUsers(normalizedUsers);
+
+        PA3Processor.fillMissingRatings(normalizedUsers, allSongs);
+        PA3Processor.fillMissingRatings(users,allSongs);
+
+        fillPredictedRatings(users, normalizedUsers, allSongs);
+        
         fillRemainingRatings(users, allSongs, songStats, userStats);
 
         Map<String, Song> songs = buildSongs(users, allSongs);
@@ -109,21 +114,23 @@ public class PA5Processor {
         }
     }
 
-    private static void fillPredictedRatings(Map<String, User> users, Set<String> allSongs) {
+    private static void fillPredictedRatings(Map<String, User> rawUsers, Map<String, User> normalizedUsers, Set<String> allSongs) {
 
-        for (User user : users.values()) {
+        for (User rawUser : rawUsers.values()) {
+            User normalizedTarget = normalizedUsers.get(rawUser.getUsername());
+
             for (String song : allSongs) {
 
-                if (!Double.isNaN(user.getRating(song))) {
+                if (!Double.isNaN(rawUser.getRating(song))) {
                     continue;
                 }
 
-                List<User> ranked = PA4Processor.rankUsers(user, users);
+                List<User> ranked = PA4Processor.rankUsers(normalizedTarget, normalizedUsers);
 
-                Double prediction = PredictionEngine.predictRating(user, song, ranked);
+                Double prediction = PredictionEngine.predictRating(normalizedTarget, song, ranked);
 
                 if (!Double.isNaN(prediction)) {
-                    user.setRating(song, prediction);
+                    rawUser.setRating(song, prediction);
                 }
             }
         }
@@ -163,6 +170,22 @@ public class PA5Processor {
         }
 
         return new RatingStats(means, counts);
+    }
+
+    private static Map<String, User> cloneUsers(Map<String, User> users) {
+        Map<String, User> copy = new HashMap<>();
+
+        for (User user : users.values()) {
+            User cloned = new User(user.getUsername());
+
+            for (var rating : user.getRatings().entrySet()) {
+                cloned.addRating(rating.getKey(), rating.getValue());
+            }
+
+            copy.put(cloned.getUsername(), cloned);
+        }
+
+        return copy;
     }
 
     private static void fillRemainingRatings(Map<String, User> users, Set<String> allSongs,
