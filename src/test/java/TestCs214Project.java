@@ -297,4 +297,81 @@ public class TestCs214Project {
             assertEquals("at least two cooperative users are required for song similarity", e.getMessage());
         }
     }
+
+    @Test 
+    public void pa5RatingStatsStoresData() {
+        Map<String, Double> means = new HashMap<>();
+        means.put("song1", 4.0);
+
+        Map<String, Integer> counts= new HashMap<>();
+        counts.put("song1", 2);
+
+        RatingStats stats = new RatingStats(means, counts);
+
+        assertEquals( 4.0, stats.getMeans().get("song1"));
+
+        assertEquals(2, stats.getCounts().get("song1"));
+    }
+
+    @Test 
+    public void clusterAddSong(){
+        Cluster cluster = new Cluster(new double[] {1.0});
+        Song song = new Song ("song1");
+
+        cluster.addSong(song);
+
+        assertEquals(1, cluster.getSongs().size());
+    }
+
+    @Test 
+    public void clusterClearSongs() {
+        Cluster cluster = new Cluster(new double [] {1.0});
+
+        cluster.addSong(new Song("song1"));
+
+        cluster.clearSongs();
+
+        assertTrue(cluster.getSongs().isEmpty());
+    }
+
+    @Test
+    public void recommendationCompareTo() {
+        Recommendation first = new Recommendation("song1", "song2");
+        Recommendation second = new Recommendation("song1", "song3");
+
+        assertTrue(first.compareTo(second) < 0);
+    }
+
+    @Test
+    public void pa5RecommendationGenerationWorks() throws IOException {
+        Path input = tempDir.resolve("file3.csv");
+
+        Files.writeString(input, 
+            "song1,user1,2\n"
+            + "song2,user1,3\n"
+            + "song4,user1,4\n"
+            + "song1,user2,2\n"
+            + "song2,user2,3\n"
+            + "song4,user2,5\n"
+            + "song1,user3,4\n"
+            + "song3,user3,5\n"
+            + "song4,user3,4\n"
+            + "song5,user3,5\n"
+            + "song1,user4,1\n"
+            + "song3,user4,2\n"
+            + "song4,user4,1\n"
+            + "song5,user5,3\n"
+            + "song6,user5,2\n");
+
+        Path output = tempDir.resolve("out.csv");
+
+        PA5Processor.run(input.toString(), output.toString(), new String[] {"song3","song5","song6"});
+
+        String csv = Files.readString(output);
+
+        assertTrue(csv.contains("user choice,recommendation"));
+        assertTrue(csv.contains("song3,song4"));
+        assertTrue(csv.contains("song6,song1"));
+        assertTrue(csv.contains("song6,song2"));
+    }
 }
